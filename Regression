@@ -1,0 +1,41 @@
+
+import numpy as np
+import pandas as pd
+import statsmodels.stats.stattools as stattools
+import statsmodels.api as sm
+
+# Now you can use functions from statsmodels.stats.stattools
+
+
+pce = "/content/PCE.csv"
+pop = "/content/POPTHM.csv"
+
+c = pd.read_csv(pce)
+p = pd.read_csv(pop)
+
+print(c)
+print(p)
+
+csp = c['PCE_NBD19730101']/p['POPTHM_NBD19730101']
+print(csp)
+
+data = pd.DataFrame({'Date': c['DATE'], 'Ind Consumption': csp})
+data['Ind Consumption'].fillna(data['Ind Consumption'].mean(), inplace=True)
+print(data)
+
+## Run an AR(1) regression to confirm Permanent Income Hypothesis 
+## (Based on Robert Hall (1978))
+
+data = data.dropna()
+x = data['Ind Consumption']
+y = data['Ind Consumption'].diff(1)
+
+y = y.dropna()
+x = x[y.index]
+y = y.astype(x.dtype)
+
+print(x)
+print(y)
+
+model = sm.OLS(y, x).fit()
+print(model.summary())
